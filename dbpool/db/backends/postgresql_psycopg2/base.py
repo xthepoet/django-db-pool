@@ -111,7 +111,7 @@ class DatabaseWrapper14and15(OriginalDatabaseWrapper):
                         "settings.DATABASES is improperly configured. "
                         "Please supply the NAME value.")
                 conn_params = {
-                    'database': settings_dict['NAME'],
+                    'dbname': settings_dict['NAME'],
                 }
                 max_conns = settings_dict['OPTIONS'].pop('MAX_CONNS', 1)
                 min_conns = settings_dict['OPTIONS'].pop('MIN_CONNS', max_conns)
@@ -127,13 +127,17 @@ class DatabaseWrapper14and15(OriginalDatabaseWrapper):
                 if settings_dict['PORT']:
                     conn_params['port'] = settings_dict['PORT']
 
+                # Use dsn string rather than keyword arguments to enable more libpq options
+                # http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING
+                dsn = str(conn_params).replace(":","=").replace("'","").replace(" ","").lstrip("{").rstrip("}").replace(","," ")
+
                 connection_pools_lock.acquire()
                 try:
                     logger.debug("Creating connection pool for db alias %s" % self.alias)
 
                     from psycopg2 import pool
                     connection_pools[self.alias] = {
-                        'pool': pool.ThreadedConnectionPool(min_conns, max_conns, **conn_params),
+                        'pool': pool.ThreadedConnectionPool(min_conns, max_conns, dsn), 
                         'settings': dict(settings_dict),
                     }
                 finally:
@@ -193,7 +197,7 @@ class DatabaseWrapper13(OriginalDatabaseWrapper):
                     from django.core.exceptions import ImproperlyConfigured
                     raise ImproperlyConfigured("You need to specify NAME in your Django settings file.")
                 conn_params = {
-                    'database': settings_dict['NAME'],
+                    'dbname': settings_dict['NAME'],
                 }
                 max_conns = settings_dict['OPTIONS'].pop('MAX_CONNS', 1)
                 min_conns = settings_dict['OPTIONS'].pop('MIN_CONNS', max_conns)
@@ -209,13 +213,17 @@ class DatabaseWrapper13(OriginalDatabaseWrapper):
                 if settings_dict['PORT']:
                     conn_params['port'] = settings_dict['PORT']
 
+                # Use dsn string rather than keyword arguments to enable more libpq options
+                # http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING
+                dsn = str(conn_params).replace(":","=").replace("'","").replace(" ","").lstrip("{").rstrip("}").replace(","," ")
+
                 connection_pools_lock.acquire()
                 try:
                     logger.debug("Creating connection pool for db alias %s" % self.alias)
 
                     from psycopg2 import pool
                     connection_pools[self.alias] = {
-                        'pool': pool.ThreadedConnectionPool(min_conns, max_conns, **conn_params),
+                        'pool': pool.ThreadedConnectionPool(min_conns, max_conns, dsn),
                         'settings': dict(settings_dict),
                     }
                 finally:
