@@ -59,6 +59,9 @@ like this:
         'PORT': '',
     }
 
+Additionally, you can add to the `OPTIONS` dict other [libpq connection options](http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING)
+such as 'OPTIONS': {'connect_timeout': 30}
+
 See the [code][base] for more information on settings `MAX_CONNS` and `MIN_CONNS`.
 
 Lastly, if you use [South](http://south.aeracode.org/) (and you should!) you'll want to make sure it knows that you're still using Postgres:
